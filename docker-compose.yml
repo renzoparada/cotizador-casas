@@ -1,0 +1,35 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: cotizador
+      POSTGRES_PASSWORD: cotizador
+      POSTGRES_DB: cotizador
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cotizador"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://cotizador:cotizador@db:5432/cotizador?schema=public
+      AUTH_SECRET: ${AUTH_SECRET:?Definí un AUTH_SECRET seguro en tu archivo .env}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:?Definí el email del admin en tu archivo .env}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Definí la contraseña del admin en tu archivo .env}
+    ports:
+      - "3000:3000"
+
+volumes:
+  db_data:
