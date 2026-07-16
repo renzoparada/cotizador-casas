@@ -173,7 +173,7 @@ export function QuoteBuilder({
     <div className="flex min-h-screen flex-col">
       <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4">
-          <span className="text-lg font-semibold">TuCasa Constructora</span>
+          <span className="text-lg font-semibold">ECOGRUPO</span>
           <a href="#formulario" className="text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400">
             Pedí tu cotización
           </a>
