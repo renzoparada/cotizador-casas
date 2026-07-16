@@ -3,12 +3,17 @@
 import "dotenv/config";
 import { defineConfig } from "prisma/config";
 
+// La integración de Postgres/Neon de Vercel a veces nombra la variable
+// distinto según cómo se conectó (DATABASE_URL, POSTGRES_PRISMA_URL,
+// POSTGRES_URL), así que probamos las tres en orden.
+const databaseUrl = process.env["DATABASE_URL"] || process.env["POSTGRES_PRISMA_URL"] || process.env["POSTGRES_URL"];
+
 export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
     path: "prisma/migrations",
   },
   datasource: {
-    url: process.env["DATABASE_URL"],
+    url: databaseUrl,
   },
 });
