@@ -1,0 +1,121 @@
+// Prisma schema - Cotizador de Casas
+//
+// Sitio de ventas público (sin login) donde el cliente arma una cotización
+// de construcción y descarga un PDF. Un panel /admin (protegido por login)
+// permite editar los modelos de casa, techos y accesorios (incluyendo sus
+// fotos) y ajustar la configuración de precios/financiamiento del negocio.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum PaymentMethod {
+  CONTADO
+  FINANCIADO
+}
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
+
+/// Fila única con la configuración global de precios/financiamiento del negocio.
+model SiteSettings {
+  id                        String   @id @default("singleton")
+  exchangeRateBobPerUsd     Decimal  @db.Decimal(10, 4)
+  annualInterestRatePercent Decimal  @db.Decimal(6, 3)
+  minDownPaymentPercent     Int
+  maxDownPaymentPercent     Int
+  defaultDownPaymentPercent Int
+  updatedAt                 DateTime @updatedAt
+}
+
+model HouseModel {
+  id            String   @id @default(cuid())
+  name          String
+  tagline       String
+  bedrooms      String
+  bathrooms     String
+  areaM2        Decimal  @db.Decimal(10, 2)
+  pricePerM2Usd Decimal  @db.Decimal(12, 2)
+  order         Int      @default(0)
+  active        Boolean  @default(true)
+  imageData     Bytes?
+  imageMimeType String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model RoofUpgrade {
+  id            String   @id @default(cuid())
+  name          String
+  description   String
+  priceUsd      Decimal  @db.Decimal(12, 2)
+  order         Int      @default(0)
+  active        Boolean  @default(true)
+  imageData     Bytes?
+  imageMimeType String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Accessory {
+  id            String   @id @default(cuid())
+  name          String
+  description   String
+  priceUsd      Decimal  @db.Decimal(12, 2)
+  order         Int      @default(0)
+  active        Boolean  @default(true)
+  imageData     Bytes?
+  imageMimeType String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+/// Lead capturado en la página pública, con el detalle completo de la
+/// cotización y (si eligió financiar) el plan de pagos calculado.
+model ConstructionQuoteLead {
+  id    String  @id @default(cuid())
+  name  String
+  phone String
+  email String?
+  notes String?
+
+  houseModelId   String
+  houseModelName String
+  areaM2         Decimal @db.Decimal(10, 2)
+  pricePerM2Usd  Decimal @db.Decimal(12, 2)
+
+  roofUpgradeId   String
+  roofUpgradeName String
+
+  // Detalle de accesorios elegidos: [{ id, name, priceUsd }]
+  accessories Json
+
+  baseUsd        Decimal @db.Decimal(12, 2)
+  accessoriesUsd Decimal @db.Decimal(12, 2)
+  totalUsd       Decimal @db.Decimal(12, 2)
+  exchangeRate   Decimal @db.Decimal(10, 4)
+  totalBob       Decimal @db.Decimal(12, 2)
+
+  paymentMethod      PaymentMethod
+  downPaymentPercent Int?
+  downPaymentUsd     Decimal?      @db.Decimal(12, 2)
+  financedAmountUsd  Decimal?      @db.Decimal(12, 2)
+  termMonths         Int?
+  annualInterestRate Decimal?      @db.Decimal(6, 3)
+  monthlyPaymentUsd  Decimal?      @db.Decimal(12, 2)
+  // Plan de pagos mes a mes: [{ month, payment, interest, principal, balance }]
+  amortizationSchedule Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
