@@ -285,13 +285,21 @@ export function QuoteBuilder({
                       aria-pressed={selected}
                       onClick={() => toggleAccessory(accessory.id)}
                       className={clsx(
-                        "flex items-start justify-between gap-3 rounded-xl border p-4 text-left transition-colors",
+                        "flex items-start gap-3 rounded-xl border p-4 text-left transition-colors",
                         selected
                           ? "border-indigo-600 bg-indigo-50 dark:border-indigo-500 dark:bg-indigo-950/40"
                           : "border-slate-200 bg-white hover:border-indigo-300 dark:border-slate-800 dark:bg-slate-900",
                       )}
                     >
-                      <span>
+                      {accessory.hasImage && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={`/api/images/accessories/${accessory.id}`}
+                          alt={accessory.name}
+                          className="h-16 w-16 shrink-0 rounded-lg object-cover"
+                        />
+                      )}
+                      <span className="flex-1">
                         <span className="block font-semibold">{accessory.name}</span>
                         <span className="mt-1 block text-xs text-slate-500 dark:text-slate-400">{accessory.description}</span>
                         <span className="mt-2 block text-sm font-medium text-indigo-600 dark:text-indigo-400">
